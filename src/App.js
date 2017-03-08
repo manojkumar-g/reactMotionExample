@@ -1,6 +1,6 @@
 import React from 'react';
 import range from 'lodash/range';
-import { Motion, StaggeredMotion, spring } from 'react-motion';
+import {presets,spring,TransitionMotion} from 'react-motion';
 
 
 
@@ -9,38 +9,41 @@ export default class App extends React.Component{
     super(props);
     this.state = {
 			todos : [
-        {key: 1,data:{text:'wake up',isDone:false}},
-        {key: 2,data:{text:'Run',isDone:false}},
-        {key: 2,data:{text:'Prepare Breakfast',isDone:false}},
+        {key: '1',data:{text:'wake up',isDone:false}},
+        {key: '2',data:{text:'Run',isDone:false}},
+        {key: '3',data:{text:'Prepare Breakfast',isDone:false}},
       ],
       value :'',
       filter : 'all'
 		};
   }
   handlechange = (e)=>{
-    this.setState({value:this.state.value})
+      this.setState({value:e.target.value})
   }
-  addTodo = ()=>{
+  addTodo = (e) =>{
+    e.preventDefault();
     this.setState({
       todos:[
         ...this.state.todos,
         {
-          key: Date.now(),data:{text:this.state.todos,isDone:false}
+          key: ''+Date.now(),data:{text:this.state.value,isDone:false}
         }
       ]
-    })
+    });
   }
   toggleDone = selectedKey =>{
     this.setState({
-      todos:this.state.map(
-        todo =>{
-          const{key,data:{text,isDone}} = todo;
-          return selectedKey==key ? {key,data:{text,isDone:!isDone}}:todo
-        }
-      )
-    })
+      todos: this.state.todos.map(todo => {
+        const {key, data: {text, isDone}} = todo;
+        return key === selectedKey
+          ? {key: key, data: {text: text, isDone: !isDone}}
+          : todo;
+      })
+    });
   }
-  changeFilter =(filter)=>   this.setState({filter})
+  changeFilter =(filter)=>   {
+    this.setState({filter})
+  }
   removeTodo = (todoKey)=>{
     this.setState({
       todos:this.state.todos.filter(
@@ -48,11 +51,113 @@ export default class App extends React.Component{
       )
     })
   }
+  toggleAllTodos = () =>{
+    const areAllNotDone = this.state.todos.every(
+      ({data}) => data.isDone
+    );
+    this.setState({
+      todos:this.state.todos.map(
+        ({key,data:{text,isDone}}) =>({key,data:{text,isDone:!areAllNotDone}})
+      )
+    });
+  }
+  getDefaultStyles = () => {
+    return this.state.todos.map(todo => ({...todo, style: {height: 0, opacity: 1}}));
+  }
+  getStyles(){
+    const {todos,value,filter} = this.state;
+    return todos.filter(
+      ({data:{isDone,text}}) =>
+                              (filter == 'compleated' && isDone ||
+                               filter == 'active' && !isDone ||
+                               filter == 'all'
+                              )
+    ).map(
+      todo => ({
+        ...todo,
+        style: {
+          height: spring(60, presets.gentle),
+          opacity: spring(1, presets.gentle),
+        }
+      })
+    )
+  }
+  willEnter() {
+    return {
+      height: 0,
+      opacity: 1,
+    };
+  }
+
+  willLeave() {
+    return {
+      height: spring(0),
+      opacity: spring(0),
+    };
+  }
+  getDefaultStyles() {
+    return this.state.todos.map(todo => ({...todo, style: {height: 0, opacity: 1}}));
+  }
   render(){
+    const {todos, value, filter} = this.state;
     return(
-      <div className = 'container' onClick = {this.handlechange}>
+      <div className = ''>
+      <header>
+        <h1>Todos</h1>
+      </header>
+      <div className = 'container main' onClick = {this.handlechange}>
+          <form onSubmit ={this.addTodo}>
+          <input autoFocus={true} onChange = {this.handlechange} value ={value}/>
+          </form>
+          <section>
+            <TransitionMotion
+               defaultStyles={this.getDefaultStyles()}
+               styles={this.getStyles()}
+               willLeave={this.willLeave}
+               willEnter={this.willEnter}
+            >
+            {
+              styles =>
+                <ul className = 'todos'>
+                      {
+                        styles.map(
+                          ({key, style, data: {isDone, text}}) =>
 
+                          <li key ={key} style = {style} className = {isDone ? 'isDone':''}
+                           >
+                           <div className = 'todo'>
+                           {text}
+                           <button className='btn btn-primary'onClick = {() => this.toggleDone(key)}>toggle</button>
+                           </div>
+                           </li>
+                        )
+                      }
+                </ul>
+            }
+            </TransitionMotion>
+          </section>
 
+          <div>
+            <h5>
+            <a
+              className={filter === 'all' ? 'selected' : ''}
+              onClick={(e) => {this.changeFilter('all')}}>
+              All
+            </a>
+            <a
+              className={filter === 'active' ? 'selected' : ''}
+              onClick={(e) => {this.changeFilter('active')}}>
+              Active
+            </a>
+            <a
+              className={filter === 'compleated' ? 'selected' : ''}
+              onClick={(e) => {this.changeFilter('compleated')}}>
+              compleated
+            </a>
+            </h5>
+          </div>
+
+      </div>
       </div>
     );
   }

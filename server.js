@@ -24,5 +24,5 @@ app.listen(1234, function(err) {
     return console.error(err);
   }
 
-  console.log('Listening at http://localhost:1234/');
+  console.log('Magic is Happening At http://localhost:1234/');
 })
