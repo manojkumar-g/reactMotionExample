@@ -24,11 +24,13 @@ export default class App extends React.Component{
     e.preventDefault();
     this.setState({
       todos:[
-        ...this.state.todos,
         {
           key: ''+Date.now(),data:{text:this.state.value,isDone:false}
-        }
-      ]
+        },
+        ...this.state.todos
+
+      ],
+      value :''
     });
   }
   toggleDone = selectedKey =>{
@@ -58,7 +60,7 @@ export default class App extends React.Component{
     this.setState({
       todos:this.state.todos.map(
         ({key,data:{text,isDone}}) =>({key,data:{text,isDone:!areAllNotDone}})
-      )
+      ),
     });
   }
   getDefaultStyles = () => {
@@ -67,7 +69,7 @@ export default class App extends React.Component{
   getStyles(){
     const {todos,value,filter} = this.state;
     return todos.filter(
-      ({data:{isDone,text}}) =>
+      ({data:{isDone,text}}) => text.toUpperCase().indexOf(value.toUpperCase()) >= 0 &&
                               (filter == 'compleated' && isDone ||
                                filter == 'active' && !isDone ||
                                filter == 'all'
@@ -105,9 +107,10 @@ export default class App extends React.Component{
       <header>
         <h1>Todos</h1>
       </header>
-      <div className = 'container main' onClick = {this.handlechange}>
+      <div className = 'container main' >
           <form onSubmit ={this.addTodo}>
-          <input autoFocus={true} onChange = {this.handlechange} value ={value}/>
+
+          <input autoFocus={true} onChange = {this.handlechange} value ={value} className ='add'/>
           </form>
           <section>
             <TransitionMotion
@@ -126,8 +129,25 @@ export default class App extends React.Component{
                           <li key ={key} style = {style} className = {isDone ? 'isDone':''}
                            >
                            <div className = 'todo'>
-                           {text}
-                           <button className='btn btn-primary'onClick = {() => this.toggleDone(key)}>toggle</button>
+                           <input
+                            className="toggle"
+                            type="checkbox"
+                            id = 'togge'
+                            onChange={() => this.toggleDone(key)}
+                            checked={isDone}
+                          />
+                          <label htmlFor="toggle" >
+                            <div className ='icon'>
+                            {!isDone && <i className="fa fa-pencil fa-2x" aria-hidden="true" onClick={() => this.toggleDone(key)}></i>}
+                            {isDone && <i className="fa fa-eraser fa-2x" aria-hidden="true" onClick={() => this.toggleDone(key)}></i>}
+
+                            </div>
+                          </label>
+                          <span className = 'text'>
+                              <span>
+                               {text}
+                              </span>
+                          </span>
                            </div>
                            </li>
                         )
