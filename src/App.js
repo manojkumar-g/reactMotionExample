@@ -63,9 +63,6 @@ export default class App extends React.Component{
       ),
     });
   }
-  getDefaultStyles = () => {
-    return this.state.todos.map(todo => ({...todo, style: {height: 0, opacity: 1}}));
-  }
   getStyles(){
     const {todos,value,filter} = this.state;
     return todos.filter(
@@ -80,6 +77,7 @@ export default class App extends React.Component{
         style: {
           height: spring(60, presets.gentle),
           opacity: spring(1, presets.gentle),
+          marginTop:spring(10,presets.gentle)
         }
       })
     )
@@ -88,6 +86,7 @@ export default class App extends React.Component{
     return {
       height: 0,
       opacity: 1,
+      marginTop:0
     };
   }
 
@@ -95,10 +94,11 @@ export default class App extends React.Component{
     return {
       height: spring(0),
       opacity: spring(0),
+      marginTop:spring(0)
     };
   }
   getDefaultStyles() {
-    return this.state.todos.map(todo => ({...todo, style: {height: 0, opacity: 1}}));
+    return this.state.todos.map(todo => ({...todo, style: {height: 0, opacity: 1,marginTop:0}}));
   }
   render(){
     const {todos, value, filter} = this.state;
